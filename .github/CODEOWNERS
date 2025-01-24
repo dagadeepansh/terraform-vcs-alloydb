@@ -1,0 +1,4 @@
+# /environments/prod/ <list of prod codeowner users or groups goes here>
+# /environments/nonprod/ <list of nonprod codeowner users or groups goes here>
+# /modules/ <list of codeowner users or groups for modules goes here> 
+# /.github/CODEOWNERS <list of codeowner users or groups for CODEOWNERS file goes here>
