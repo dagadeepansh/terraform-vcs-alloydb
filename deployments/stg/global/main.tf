@@ -54,7 +54,7 @@ module "alloydb_primary" {
     annotations           = var.primary_instance.annotations
     gce_zone              = var.primary_instance.gce_zone
     require_connectors    = var.primary_instance.require_connectors
-    ssl_mode              = var.primary_instance.ssl_mode
+    ssl_mode              = var.primary_instance.ssl_mode == null ? "ENCRYPTED_ONLY" : var.primary_instance.ssl_mode
     query_insights_config = var.primary_instance.query_insights_config
     enable_public_ip      = var.primary_instance.enable_public_ip
     cidr_range            = var.primary_instance.cidr_range
@@ -71,7 +71,7 @@ module "alloydb_primary" {
       database_flags        = read_instance.database_flags
       gce_zone              = read_instance.gce_zone
       require_connectors    = var.primary_instance.require_connectors
-      ssl_mode              = var.primary_instance.ssl_mode
+      ssl_mode              = read_instance.ssl_mode == null ? "ENCRYPTED_ONLY" : read_instance.ssl_mode
       query_insights_config = read_instance.query_insights_config
       enable_public_ip      = read_instance.enable_public_ip
       cidr_range            = read_instance.cidr_range
@@ -205,9 +205,9 @@ resource "random_password" "initial_user_password" {
 
 resource "google_secret_manager_secret" "alloydb_secret" {
   secret_id = "alloydb-initial-user-password"
-  project = var.project_id
+  project   = var.project_id
   replication {
-    auto{} # Replicate the secret automatically to all regions
+    auto {} # Replicate the secret automatically to all regions
   }
 }
 

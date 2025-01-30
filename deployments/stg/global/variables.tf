@@ -173,6 +173,12 @@ variable "primary_instance" {
   }
 
   validation {
+    condition = alltrue([
+      var.primary_instance.ssl_mode == null || var.primary_instance.ssl_mode == "ENCRYPTED_ONLY"
+    ])
+    error_message = "The ssl_mode for each read pool instance must be \"ENCRYPTED_ONLY\" or be left unset (null) to use the module's default."
+  }
+  validation {
     condition     = can(regex("^(2|4|8|16|32|64|96|128)$", tostring(var.primary_instance.machine_cpu_count)))
     error_message = "machine_cpu_count must be one of [2, 4, 8, 16, 32, 64, 96, 128]"
   }
@@ -219,6 +225,13 @@ variable "read_pool_instances" {
   default     = [] // Default to an empty list (good choice for optional read pools)
   description = "Read pool instance configurations."
 
+  validation {
+    condition = alltrue([
+      for inst in var.read_pool_instances :
+      inst.ssl_mode == null || inst.ssl_mode == "ENCRYPTED_ONLY"
+    ])
+    error_message = "The ssl_mode for each read pool instance must be \"ENCRYPTED_ONLY\" or be left unset (null) to use the module's default."
+  }
   validation {
     condition = alltrue([
       for instance in var.read_pool_instances :                                                      // Corrected:  var.read_pool_instances
@@ -286,6 +299,13 @@ variable "replica_instance" {
     require_connectors = false
     ssl_mode           = "ENCRYPTED_ONLY"
     machine_cpu_count  = 2
+  }
+
+  validation {
+    condition = alltrue([
+      var.replica_instance.ssl_mode == null || var.replica_instance.ssl_mode == "ENCRYPTED_ONLY"
+    ])
+    error_message = "The ssl_mode for each read pool instance must be \"ENCRYPTED_ONLY\" or be left unset (null) to use the module's default."
   }
 }
 variable "cluster_depends_on" {
