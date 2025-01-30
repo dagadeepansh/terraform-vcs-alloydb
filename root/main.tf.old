@@ -1,6 +1,6 @@
 # 
 module "alloydb_primary" {
-  source = "../../terraform-gcp-alloydb"
+  source = "../../../root"
 
   project_id           = var.project_id
   cluster_id           = var.cluster_id
@@ -9,6 +9,7 @@ module "alloydb_primary" {
   attachment_project_number = var.attachment_project_number
 
   continuous_backup_recovery_window_days = var.continuous_backup_recovery_window_days
+  
   primary_instance = {
     instance_id           = var.primary_instance.instance_id
     display_name          = var.primary_instance.display_name
@@ -43,7 +44,6 @@ module "alloydb_primary" {
       machine_cpu_count = read_instance.machine_cpu_count
     }
   ]
-  #cluster_depends_on = [google_kms_crypto_key_iam_member.alloydb_sa_iam
 }
 # resource "google_kms_crypto_key_iam_member" "alloydb_sa_iam" {
 #   crypto_key_id = google_kms_crypto_key.key_region_primary.id
