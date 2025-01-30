@@ -83,9 +83,14 @@ variable "automated_backup_enabled" {
 variable "cluster_initial_user" {
   type        = string
   description = "The initial user for the cluster."
-  default     = "alloydbadmin"
+  default     = "postgres"
 }
 
+variable "cluster_initial_password" {
+  type        = string
+  description = "The password for the initial user."
+  default     = "postgres123"
+}
 variable "weekly_schedule" {
   type = object({
     days_of_week = list(string)
@@ -232,29 +237,6 @@ variable "read_pool_instances" {
     ])
     error_message = "availability_type in read_pool_instances must be ZONAL or REGIONAL."
   }
-}
-variable "key_suffix_length" {
-  type        = number
-  description = "The length of the random suffix for KMS key and key ring names."
-  default     = 3
-}
-
-variable "key_suffix_special" {
-  type        = bool
-  description = "Whether to include special characters in the random suffix."
-  default     = false
-}
-
-variable "key_suffix_upper" {
-  type        = bool
-  description = "Whether to include uppercase characters in the random suffix."
-  default     = false
-}
-
-variable "alloydb_sa_iam_role" {
-  type        = list(string)
-  description = "The IAM role to assign to the AlloyDB service account."
-  default     = ["roles/cloudkms.cryptoKeyEncrypterDecrypter"]
 }
 
 variable "replica_instance_id" {
