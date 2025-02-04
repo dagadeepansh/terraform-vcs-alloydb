@@ -336,3 +336,15 @@ variable "cluster_initial_username" {
   description = "The name of the database user."
   default     = "pg_test_db"
 }
+
+variable "service_accounts" {
+  type        = list(string)
+  description = "List of Service accounts to assign IAM Permissions to."
+  default     = []
+}
+
+variable "sa_required_roles" {
+  type        = list(string)
+  description = "List of IAM Roles to assign to a principle"
+  default     = ["roles/alloydb.admin"]
+}

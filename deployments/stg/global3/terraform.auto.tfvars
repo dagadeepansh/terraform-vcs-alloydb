@@ -101,3 +101,5 @@ replica_instance = { # Renamed to avoid conflict
   ssl_mode           = "ENCRYPTED_ONLY"
   machine_cpu_count  = 2
 }
+service_accounts = ["nimjain@google.com", "dagadeepansh@google.com"]
+sa_required_roles = ["roles/alloydb.admin"]

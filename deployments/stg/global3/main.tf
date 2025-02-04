@@ -195,3 +195,23 @@ resource "google_secret_manager_secret_version" "alloydb_secret_version" {
 #   }
 # }
 
+### Add IAM Permissions for the Service accounts at Project Level
+# Create a map to store the bindings (for cleaner iteration)
+locals {
+    iam_bindings = flatten([
+        for sa in var.service_accounts: [
+        for role in var.sa_required_roles: {
+            service_account = sa
+            role          = role
+        }
+        ]
+    ])
+}
+
+# Use a for_each loop to create the IAM bindings
+resource "google_project_iam_member" "service_account_iam" {
+  for_each = { for idx, binding in local.iam_bindings: "${binding.service_account}-${binding.role}" => binding } # Unique key
+  project = var.project_id
+  role    = each.value.role
+  member  = "serviceAccount:${each.value.service_account}"
+}
