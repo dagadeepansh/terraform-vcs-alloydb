@@ -33,15 +33,15 @@ variable "psc_attachment_project_number" {
 }
 
 variable "region_primary" {
-  description = "The region for cluster in central us"
+  description = "The region for cluster"
   type        = string
-  default     = "us-central1"
+  default     = "northamerica-northeast1"
 }
 
 variable "region_replica" {
-  description = "The region for cluster in east us"
+  description = "The region for cluster"
   type        = string
-  default     = "us-east1"
+  default     = "northamerica-northeast2"
 }
 
 variable "cluster_name" {
@@ -53,7 +53,7 @@ variable "cluster_name" {
 variable "cluster_id" {
   type        = string
   description = "The ID of the AlloyDB cluster."
-  default     = "primary-central-cluster-id"
+  default     = "primary-cluster-id"
 }
 
 variable "psc_enabled" {
@@ -83,7 +83,7 @@ variable "automated_backup_enabled" {
 variable "cluster_initial_user" {
   type        = string
   description = "The initial user for the cluster."
-  default     = "alloydbadmin"
+  default     = "postgres"
 }
 
 variable "weekly_schedule" {
@@ -123,12 +123,6 @@ variable "continuous_backup_recovery_window_days" {
   description = "The number of days for the continuous backup recovery window."
   default     = 10
 }
-
-# variable "primary_instance_id" {
-#   type        = string
-#   description = "Primary instance id name"
-#   default     = "cluster-primary-central-instance1-psc"
-# }
 
 variable "primary_instance" {
   type = object({
@@ -178,6 +172,7 @@ variable "primary_instance" {
     ])
     error_message = "The ssl_mode for each read pool instance must be \"ENCRYPTED_ONLY\" or be left unset (null) to use the module's default."
   }
+
   validation {
     condition     = can(regex("^(2|4|8|16|32|64|96|128)$", tostring(var.primary_instance.machine_cpu_count)))
     error_message = "machine_cpu_count must be one of [2, 4, 8, 16, 32, 64, 96, 128]"
@@ -222,7 +217,7 @@ variable "read_pool_instances" {
     enable_public_ip = bool
     cidr_range       = list(string)
   }))
-  default     = [] // Default to an empty list (good choice for optional read pools)
+  default     = []
   description = "Read pool instance configurations."
 
   validation {
@@ -232,6 +227,7 @@ variable "read_pool_instances" {
     ])
     error_message = "The ssl_mode for each read pool instance must be \"ENCRYPTED_ONLY\" or be left unset (null) to use the module's default."
   }
+
   validation {
     condition = alltrue([
       for instance in var.read_pool_instances :                                                      // Corrected:  var.read_pool_instances
@@ -307,6 +303,7 @@ variable "replica_instance" {
     ])
     error_message = "The ssl_mode for each read pool instance must be \"ENCRYPTED_ONLY\" or be left unset (null) to use the module's default."
   }
+
 }
 variable "cluster_depends_on" {
   type    = any
@@ -317,10 +314,4 @@ variable "replica_gce_zone" {
   type        = string
   description = "The zone to place the replica instance."
   default     = "" // Make sure the user sets it.
-}
-
-variable "create_replica_cluster" {
-  type        = bool
-  description = "Whether to create a cross-region replica cluster."
-  default     = false # Default to NOT creating a replica
 }

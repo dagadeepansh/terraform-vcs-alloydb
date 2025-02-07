@@ -64,16 +64,16 @@ output "read_psc_attachment_links_primary" {
   value = module.alloydb_primary.read_psc_attachment_links
 }
 
-# output "cluster_replica" {
-#   description = "cluster created"
-#   value       = module.alloydb_replica.cluster
-# }
-
 output "cluster_id_replica" {
-  value       = var.create_replica_cluster ? google_alloydb_cluster.replica_cluster[0].cluster_id : null
-  description = "The ID of the replica AlloyDB cluster (if created)."
-  sensitive   = false # Consider if this needs to be sensitive
+  description = "cluster created"
+  value       = module.alloydb_replica.cluster
 }
+
+#output "cluster_id_replica" {
+#  value       = var.create_replica_cluster ? google_alloydb_cluster.replica_cluster[0].cluster_id : null
+#  description = "The ID of the replica AlloyDB cluster (if created)."
+#  sensitive   = false # Consider if this needs to be sensitive
+#}
 
 output "kms_key_name_primary" {
   description = "he fully-qualified resource name of the KMS key"

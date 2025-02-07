@@ -7,7 +7,7 @@ cluster_name                  = "primary-cluster-psc"
 cluster_id                    = "primary-central-cluster-id"
 backup_window                 = "1800s"        # Keeping original value
 automated_backup_enabled      = true           # Keeping original value
-cluster_initial_user          = "alloydbadmin" # Keeping default from variables.tf
+cluster_initial_user          = "postgres" # Keeping default from variables.tf
 
 weekly_schedule = {
   days_of_week = ["FRIDAY"]
@@ -92,7 +92,6 @@ alloydb_sa_iam_role      = ["roles/cloudkms.cryptoKeyEncrypterDecrypter"] # Keep
 replica_instance_id      = "cluster-replica-east-instance1-psc"           # From your provided values
 continuous_backup_enable = true                                           # Keeping original value
 cluster_id_replica       = "replica-east-cluster-id"                      # From your provided values
-create_replica_cluster   = true
 replica_instance = { # Renamed to avoid conflict
   require_connectors = false
   ssl_mode           = "ENCRYPTED_ONLY"

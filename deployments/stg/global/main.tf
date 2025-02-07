@@ -16,6 +16,10 @@
 module "alloydb_primary" {
   source  = "GoogleCloudPlatform/alloy-db/google"
   version = "~> 3.0"
+
+  #source  = "app.terraform.io/bankofnovascotia/terraform-gcp-alloydb/gcp"
+  #version = "1.0.1"
+
   #cluster_id       = "cluster-${var.region_primary}-psc"
   project_id           = var.project_id
   cluster_location     = var.region_primary
@@ -45,9 +49,9 @@ module "alloydb_primary" {
   continuous_backup_encryption_key_name  = google_kms_crypto_key.key_region_primary.id
 
   primary_instance = {
-    instance_id           = var.primary_instance.instance_id
-    display_name          = var.primary_instance.display_name
-    machine_type          = "db-custom-${var.primary_instance.machine_cpu_count}-3840" # Changed interpolation
+    instance_id  = var.primary_instance.instance_id
+    display_name = var.primary_instance.display_name
+    #machine_type          = "db-custom-${var.primary_instance.machine_cpu_count}-3840" # Changed interpolation
     availability_type     = var.primary_instance.availability_type
     database_flags        = local.merged_database_flags
     labels                = var.primary_instance.labels
@@ -63,10 +67,10 @@ module "alloydb_primary" {
 
   read_pool_instance = [
     for _, read_instance in var.read_pool_instances : {
-      instance_id           = read_instance.instance_id
-      display_name          = read_instance.display_name
-      node_count            = read_instance.node_count
-      machine_type          = "db-custom-${read_instance.machine_cpu_count}-3840" # Changed interpolation
+      instance_id  = read_instance.instance_id
+      display_name = read_instance.display_name
+      node_count   = read_instance.node_count
+      #machine_type          = "db-custom-${read_instance.machine_cpu_count}-3840" # Changed interpolation
       availability_type     = read_instance.availability_type
       database_flags        = read_instance.database_flags
       gce_zone              = read_instance.gce_zone
@@ -156,47 +160,6 @@ resource "google_kms_crypto_key_iam_member" "alloydb_sa_iam_secondary" {
   member        = "serviceAccount:${google_project_service_identity.alloydb_sa.email}"
 }
 
-
-resource "google_alloydb_cluster" "replica_cluster" {
-  count = var.create_replica_cluster ? 1 : 0
-
-  #name = module.alloydb_primary.cluster_name ## Comment this line to promote this cluster as primary cluster
-
-  cluster_id = var.cluster_id_replica
-  location   = var.region_replica
-  project    = var.project_id
-
-  continuous_backup_config {
-    enabled              = var.continuous_backup_enable
-    recovery_window_days = var.continuous_backup_recovery_window_days
-  }
-  encryption_config {
-    kms_key_name = google_kms_crypto_key.key_region_replica.id
-  }
-}
-
-resource "google_alloydb_instance" "replica_instance" {
-  count = var.create_replica_cluster ? 1 : 0
-
-  #cluster          = module.alloydb_primary.replica_cluster[0].name 
-  cluster       = google_alloydb_cluster.replica_cluster[0].name
-  instance_id   = var.replica_instance_id
-  instance_type = "READ_POOL"
-
-  machine_config {
-    cpu_count = var.primary_instance.machine_cpu_count # Take CPU from primary instance variable
-  }
-
-  availability_type = "ZONAL"
-  gce_zone          = var.replica_gce_zone
-
-  depends_on = [
-    module.alloydb_primary,
-    google_kms_crypto_key_iam_member.alloydb_sa_iam_secondary,
-    google_kms_crypto_key.key_region_replica,
-  ]
-}
-
 resource "random_password" "initial_user_password" {
   length           = 16
   special          = true
@@ -215,3 +178,42 @@ resource "google_secret_manager_secret_version" "alloydb_secret_version" {
   secret      = google_secret_manager_secret.alloydb_secret.id
   secret_data = random_password.initial_user_password.result
 }
+
+### Working example of creating Database and Run query by using local_exec provisioner
+## Pre-requisite: 1. Must enable Public IP for the Primary Instance
+##                2. Must whitelist the runner IP in the Authorized network
+
+# Create Table in the default postgres db
+# resource "null_resource" "run_query" {
+#   depends_on = [module.alloydb_primary]
+#   provisioner "local-exec" {
+#     command     = <<EOF
+#       PGPASSWORD="postgres" 
+#       psql -h ${module.alloydb_primary.primary_instance.public_ip_address} \
+#            -U "postgres"  \
+#            -p 5432  \
+#            -d postgres \
+#            -c "CREATE TABLE my_table (id SERIAL PRIMARY KEY, name VARCHAR(255));"
+#     EOF
+#     interpreter = ["bash", "-c"]
+#     }
+# }
+
+# Create a new db
+# resource "null_resource" "create_database" {
+#   depends_on = [module.alloydb_primary]
+#   provisioner "local-exec" {
+#     command     = <<EOF
+#       PGPASSWORD="postgres" \
+#       psql -h ${module.alloydb_primary.primary_instance.public_ip_address} \
+#            -U "${var.cluster_initial_user}" \
+#            -p 5432 \
+#            -c "CREATE DATABASE ${var.database_name};"
+#     EOF
+#     interpreter = ["bash", "-c"]
+#     environment = {
+#       # Set timeout as needed
+#       # PGDATABASE = var.database_name
+#     }
+#   }
+# }
