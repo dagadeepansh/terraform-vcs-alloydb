@@ -20,6 +20,12 @@ variable "project_id" {
   default     = "cloudlake-dev-1"
 }
 
+variable "secret_id" {
+  description = "The ID of the secret"
+  type        = string
+  default     = "postgres-password-v1"
+}
+
 variable "psc_attachment_project_id" {
   description = "The ID of the project in which attachment will be provisioned"
   type        = string
@@ -149,7 +155,11 @@ variable "primary_instance" {
     instance_id        = "default-instance-id" // Good practice to provide defaults
     display_name       = "Default Instance"
     database_flags     = {}
-    labels             = {}
+    labels             = {
+      security_cia = "cia" #  Get user input during plan/apply
+      security_pci = "pci" # Get user input during plan/apply
+      security_data_confidentiality = "Confidential" # Get user input during plan/apply
+      }
     annotations        = {}
     gce_zone           = null    //  Use null for optional values
     availability_type  = "ZONAL" // Or "REGIONAL"
@@ -315,3 +325,32 @@ variable "replica_gce_zone" {
   description = "The zone to place the replica instance."
   default     = "" // Make sure the user sets it.
 }
+
+variable "security_cia" {
+  type        = string
+  description = "Represents critical applications to the operations of the organization (cia or non_cia)"
+  validation {
+    condition     = contains(["cia", "non_cia"], var.security_cia)
+    error_message = "The security_cia value must be either 'cia' or 'non_cia'."
+  }
+}
+
+variable "security_pci" {
+  type        = string
+  description = "Represents whether the system stores or processes payment card holder data (pci or non_pci)"
+  validation {
+    condition     = contains(["pci", "non_pci"], var.security_pci)
+    error_message = "The security_pci value must be either 'pci' or 'non_pci'."
+  }
+}
+
+variable "security_data_confidentiality" {
+  type        = string
+  description = "Represents information type stored or processed by the applications (Registered Confidential, Confidential, Internal, or Public)"
+  validation {
+    condition     = contains(["Registered Confidential", "Confidential", "Internal", "Public"], var.security_data_confidentiality)
+    error_message = "Invalid data confidentiality level.  Must be one of: Registered Confidential, Confidential, Internal, or Public."
+  }
+}
+
+

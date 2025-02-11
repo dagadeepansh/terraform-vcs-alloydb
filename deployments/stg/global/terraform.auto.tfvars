@@ -1,12 +1,13 @@
 project_id                    = "cloudlake-dev-1"
+secret_id                     = "postgres-password-v2"
 psc_attachment_project_id     = "terraform-cloudbuild"
 psc_attachment_project_number = "805128748265"
 region_primary                = "us-central1" # Keeping original value
 region_replica                = "us-east4"    # From your provided values
 cluster_name                  = "primary-cluster-psc"
 cluster_id                    = "primary-central-cluster-id"
-backup_window                 = "1800s"        # Keeping original value
-automated_backup_enabled      = true           # Keeping original value
+backup_window                 = "1800s"    # Keeping original value
+automated_backup_enabled      = true       # Keeping original value
 cluster_initial_user          = "postgres" # Keeping default from variables.tf
 
 weekly_schedule = {
@@ -27,7 +28,11 @@ primary_instance = {
   instance_id        = "cluster-primary-central-instance1-psc" # From your provided values
   display_name       = "Primary Instance"                      # Keeping original value
   database_flags     = {}
-  labels             = {}      # Keeping original value
+  labels             = {
+      security_cia = "cia" #  Get user input during plan/apply
+      security_pci = "pci" # Get user input during plan/apply
+      security_data_confidentiality = "Confidential" # Get user input during plan/apply
+  }      # Keeping original value
   annotations        = {}      # Keeping original value
   gce_zone           = null    # Keeping original value
   availability_type  = "ZONAL" # Keeping original value
@@ -92,9 +97,16 @@ alloydb_sa_iam_role      = ["roles/cloudkms.cryptoKeyEncrypterDecrypter"] # Keep
 replica_instance_id      = "cluster-replica-east-instance1-psc"           # From your provided values
 continuous_backup_enable = true                                           # Keeping original value
 cluster_id_replica       = "replica-east-cluster-id"                      # From your provided values
-replica_instance = { # Renamed to avoid conflict
+replica_instance = {                                                      # Renamed to avoid conflict
   require_connectors = false
   ssl_mode           = "ENCRYPTED_ONLY"
   machine_cpu_count  = 2
 }
-psc_vpc_network = "psc-vpc" # Added this
+
+security_cia = "cia" #  Get user input during plan/apply
+
+security_pci = "pci" # Get user input during plan/apply
+
+security_data_confidentiality = "Confidential" # Get user input during plan/apply
+
+#psc_vpc_network = "psc-vpc" # Added this

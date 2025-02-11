@@ -73,6 +73,7 @@ module "alloydb_primary" {
       #machine_type          = "db-custom-${read_instance.machine_cpu_count}-3840" # Changed interpolation
       availability_type     = read_instance.availability_type
       database_flags        = read_instance.database_flags
+      labels                = var.primary_instance.labels
       gce_zone              = read_instance.gce_zone
       require_connectors    = var.primary_instance.require_connectors
       ssl_mode              = read_instance.ssl_mode == null ? "ENCRYPTED_ONLY" : read_instance.ssl_mode
@@ -95,6 +96,14 @@ module "alloydb_primary" {
 }
 
 locals {
+
+  security_labels = {
+    security_cia              = var.security_cia
+    security_pci              = var.security_pci
+    security_data_confidentiality = var.security_data_confidentiality
+  }
+
+  labels = merge(var.primary_instance.labels,local.security_labels)
   default_database_flags = {
     log_error_verbosity           = "default"
     log_connections               = "on"
@@ -167,7 +176,7 @@ resource "random_password" "initial_user_password" {
 }
 
 resource "google_secret_manager_secret" "alloydb_secret" {
-  secret_id = "alloydb-initial-user-password"
+  secret_id = var.secret_id
   project   = var.project_id
   replication {
     auto {} # Replicate the secret automatically to all regions
