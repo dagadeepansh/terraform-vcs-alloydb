@@ -21,52 +21,52 @@ output "project_id" {
 
 output "cluster_primary" {
   description = "cluster"
-  value       = module.alloydb_primary.cluster_primary
+  value       = module.alloydb_primary_gold.cluster_primary
   sensitive   = true // Add this line
 }
 
 output "primary_instance_primary" {
   description = "primary instance created"
-  value       = module.alloydb_primary.primary_instance_primary
+  value       = module.alloydb_primary_gold.primary_instance_primary
 }
 
 output "cluster_id_primary" {
   description = "ID of the Alloy DB Cluster created"
-  value       = module.alloydb_primary.cluster_id_primary
+  value       = module.alloydb_primary_gold.cluster_id_primary
 }
 
 output "primary_instance_id_primary" {
   description = "ID of the primary instance created"
-  value       = module.alloydb_primary.primary_instance_id_primary
+  value       = module.alloydb_primary_gold.primary_instance_id_primary
 }
 
 output "read_instance_ids_primary" {
   description = "IDs of the read instances created"
-  value       = module.alloydb_primary.read_instance_ids_primary
+  value       = module.alloydb_primary_gold.read_instance_ids_primary
 }
 
 output "cluster_name_primary" {
   description = "The name of the cluster resource"
-  value       = module.alloydb_primary.cluster_name_primary
+  value       = module.alloydb_primary_gold.cluster_name_primary
 }
 
 output "primary_psc_attachment_link_primary" {
   description = "The private service connect (psc) attachment created for primary instance"
-  value       = module.alloydb_primary.primary_psc_attachment_link_primary
+  value       = module.alloydb_primary_gold.primary_psc_attachment_link_primary
 }
 
 output "psc_dns_name_primary" {
   description = "he DNS name of the instance for PSC connectivity. Name convention: ...alloydb-psc.goog"
-  value       = module.alloydb_primary.psc_dns_name_primary
+  value       = module.alloydb_primary_gold.psc_dns_name_primary
 }
 
 output "read_psc_attachment_links_primary" {
-  value = module.alloydb_primary.read_psc_attachment_links_primary
+  value = module.alloydb_primary_gold.read_psc_attachment_links_primary
 }
 
 output "cluster_id_replica" {
   description = "cluster created"
-  value       = module.alloydb_replica.cluster_id_replica
+  value       = module.alloydb_replica_gold.cluster_id_replica
 }
 
 #output "cluster_id_replica" {
