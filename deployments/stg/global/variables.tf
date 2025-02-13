@@ -159,7 +159,7 @@ variable "primary_instance" {
       security_cia = "cia" #  Get user input during plan/apply
       security_pci = "pci" # Get user input during plan/apply
       security_data_confidentiality = "Confidential" # Get user input during plan/apply
-      }
+    }
     annotations        = {}
     gce_zone           = null    //  Use null for optional values
     availability_type  = "ZONAL" // Or "REGIONAL"
