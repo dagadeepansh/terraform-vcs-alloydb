@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+locals{
+  project_id = "terraform-cloudbuild"
+  primary_location  = "northamerica-northeast1"
+  region_replica = "northamerica-northeast2"
+  label  = "alloydb-bronze"
+  psc_project_number = 805128748265
+  cluster_id = "bronze-cluster"
+  cluster_display_name = "primary-cluster-psc-bronze"
+  security_labels = {
+    security_cia              = "abcd" 
+    security_pci              = "pci"
+    security_data_confidentiality = "Confidential" 
+  }
+}
+
+# Validation resource (using null_resource)
+resource "null_resource" "security_label_validation" {
+  depends_on = [local.security_labels] # Ensure validation happens after locals
+
+  provisioner "local-exec" {
+    command = <<EOT
+      # Validation logic (using bash)
+      if [[! ( "${local.security_labels.security_cia}" == "cia" || "${local.security_labels.security_cia}" == "non_cia" ) ]]; then
+        echo "Error: The security_cia value must be either 'cia' or 'non_cia'."
+        exit 1
+      fi
+
+      if [[! ( "${local.security_labels.security_pci}" == "pci" || "${local.security_labels.security_pci}" == "non_pci" ) ]]; then
+        echo "Error: The security_pci value must be either 'pci' or 'non_pci'."
+        exit 1
+      fi
+
+      if [[! ( "${local.security_labels.security_data_confidentiality}" == "Registered Confidential" || "${local.security_labels.security_data_confidentiality}" == "Confidential" || "${local.security_labels.security_data_confidentiality}" == "Internal" || "${local.security_labels.security_data_confidentiality}" == "Public" ) ]]; then
+        echo "Error: Invalid data confidentiality level. Must be one of: Registered Confidential, Confidential, Internal, or Public."
+        exit 1
+      fi
+    EOT
+  }
+}
+
 module "alloydb_primary_gold" {
   source = "../../../../terraform-gcp-alloydb"
-  project_id     = "cloudlake-dev-1"
-  region_primary = "us-central1"
-  cluster_id     = "primary-gold-cluster-id"
-  cluster_name   = "primary-cluster-gold" 
+  project_id     = local.project_id
+  region_primary = local.primary_location
+  cluster_id     = local.cluster_id
+  cluster_name   = local.cluster_display_name
 
   psc_enabled                   = true
-  psc_attachment_project_number = 805128748265
+  psc_attachment_project_number = local.psc_project_number
 
   # cluster_encryption_key_name = google_kms_crypto_key.key_region_primary.id
 
@@ -38,7 +79,7 @@ module "alloydb_primary_gold" {
   continuous_backup_recovery_window_days = 10
 
   primary_instance = {
-    instance_id  = "primary-instance-gold-us-central1"
+    instance_id  = "${local.cluster_display_name}-instance1-psc"
     display_name = "Primary Instance Gold (us-central1) "
     #machine_type          = "db-custom-${var.primary_instance.machine_cpu_count}-3840" # Changed interpolation
     availability_type     = "REGIONAL"
@@ -54,9 +95,9 @@ module "alloydb_primary_gold" {
            "log_statement"               = "all"
            "password.enforce_complexity" = "on"
         }
-    labels                = {}
+    labels                = local.security_labels
     annotations           = {}
-    gce_zone              = "us-central1-a" 
+    gce_zone              = "us-central1-a"
     require_connectors    = false
     ssl_mode              = "ENCRYPTED_ONLY" 
     query_insights_config = {
@@ -72,12 +113,12 @@ module "alloydb_primary_gold" {
 
   read_pool_instances  = [
   {
-    instance_id        = "readpool-instance-us-central1"
-    display_name       = "Read Pool Instance (us-central1-f)" # Descriptive name
+    instance_id        = "${local.cluster_display_name}-instance1-psc-r1-psc"
+    display_name       = "Read Pool Instance r1-psc" # Descriptive name
     node_count         = 1
     database_flags     = {}
     availability_type  = "ZONAL"         # Zonal, in a *different* zone than primary
-    gce_zone           = "us-central1-f" # Zone 2 in primary region - MUST be different
+    gce_zone           = "us-central1-b" # Zone 2 in primary region - MUST be different
     machine_cpu_count  = 2               # Match primary for consistency
     ssl_mode           = "ENCRYPTED_ONLY"
     require_connectors = false
@@ -89,6 +130,25 @@ module "alloydb_primary_gold" {
     }
     enable_public_ip = false
     cidr_range       = []
+  },
+  {
+    instance_id        = "${local.cluster_display_name}-instance1-psc-r2-psc" # Combining primary instance ID and suffix
+    display_name       = "Read Pool Instance r2-psc"                    # Clear display name
+    node_count         = 2
+    database_flags     = {}      # You might want to specify flags here
+    availability_type  = "ZONAL" # Or "REGIONAL"
+    gce_zone           = "us-central1-c"    # Specify if needed
+    machine_cpu_count  = 2       #  From the the machine cpu count
+    ssl_mode           = "ENCRYPTED_ONLY"
+    require_connectors = false # Default
+    query_insights_config = {  # Defaults
+      query_string_length     = 1024
+      record_application_tags = false
+      record_client_address   = false
+      query_plans_per_minute  = 5
+    }
+    enable_public_ip = false # Default
+    cidr_range       = []    # Default
   }
 ]
   cluster_initial_user = "postgres_primary"

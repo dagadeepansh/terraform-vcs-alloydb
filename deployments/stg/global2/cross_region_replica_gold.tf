@@ -18,13 +18,13 @@ module "alloydb_replica_gold" {
   source  = "../../../../terraform-gcp-alloydb"
   # version = "~> 3.0"
 
-  project_id     = "cloudlake-dev-1"
-  region_replica = "us-east4"
-  cluster_id     = "replica-gold-east-cluster-id" 
-  cluster_name   = "primary-cluster-gold" 
+  project_id     = local.project_id
+  region_replica = local.region_replica
+  cluster_id     = "replica-${local.region_replica}-${local.cluster_id}" 
+  cluster_name   = local.cluster_display_name
 
   psc_enabled                   = true
-  psc_attachment_project_number = 805128748265
+  psc_attachment_project_number = local.psc_project_number
 
   # cluster_encryption_key_name = google_kms_crypto_key.key_region_primary.id
   backup_window            = "1800s"
@@ -40,7 +40,7 @@ module "alloydb_replica_gold" {
   continuous_backup_recovery_window_days = 10
 
   primary_instance = {
-    instance_id  =  "replica-instance-us-east4",
+    instance_id  =  "replica-${local.region_replica}-${local.cluster_id}-instance1-psc",
     display_name = "Replica Instance Gold (us-central1) "
     #machine_type          = "db-custom-${var.primary_instance.machine_cpu_count}-3840" # Changed interpolation
     availability_type     = "REGIONAL"
@@ -58,7 +58,7 @@ module "alloydb_replica_gold" {
         }
     labels                = {}
     annotations           = {}
-    gce_zone              = "us-central1-a" 
+    gce_zone              = "us-central1-c" 
     require_connectors    = false
     ssl_mode              = "ENCRYPTED_ONLY" 
     query_insights_config = {
@@ -74,7 +74,7 @@ module "alloydb_replica_gold" {
 
   read_pool_instances  = [
   {
-    instance_id        = "readpool-instance-us-central1"
+    instance_id        = "replica-${local.region_replica}-${local.cluster_id}-instance1-r1-psc",
     display_name       = "Read Pool Instance (us-central1-f)" # Descriptive name
     node_count         = 1
     database_flags     = {}

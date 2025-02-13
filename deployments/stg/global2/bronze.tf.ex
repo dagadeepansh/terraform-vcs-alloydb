@@ -70,27 +70,6 @@ module "alloydb_primary_bronze" {
     machine_cpu_count     = 2
   }
 
-  read_pool_instances  = [
-  {
-    instance_id        = "readpool-instance-us-central1"
-    display_name       = "Read Pool Instance (us-central1-f)" # Descriptive name
-    node_count         = 1
-    database_flags     = {}
-    availability_type  = "ZONAL"         # Zonal, in a *different* zone than primary
-    gce_zone           = "us-central1-f" # Zone 2 in primary region - MUST be different
-    machine_cpu_count  = 2               # Match primary for consistency
-    ssl_mode           = "ENCRYPTED_ONLY"
-    require_connectors = false
-    query_insights_config = {
-      query_string_length     = 1024
-      record_application_tags = false
-      record_client_address   = false
-      query_plans_per_minute  = 5
-    }
-    enable_public_ip = false
-    cidr_range       = []
-  }
-]
   cluster_initial_user = "postgres_primary"
   secret_id            = "primary_postgres_secret"
 }
