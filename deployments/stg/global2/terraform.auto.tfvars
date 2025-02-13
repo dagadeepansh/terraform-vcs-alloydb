@@ -10,7 +10,7 @@ automated_backup_enabled      = true       # Keeping original value
 cluster_initial_user          = "postgres" # Keeping default from variables.tf
 cluster_replica_user          = "postgres" # Keeping default from variables.tf
 replica_secret_id                     = "postgres_secret"
-primary_secret_id                     = "postgres_secret"
+primary_secret_id                     = "replica_postgres_secret"
 weekly_schedule = {
   days_of_week = ["FRIDAY"]
   start_times  = ["02:00:00:000"] # Using provided corrected format
@@ -68,7 +68,7 @@ read_pool_instances = [
   {
     instance_id        = "cluster-primary-central-instance1-psc-r2-psc" # Combining primary instance ID and suffix
     display_name       = "Read Pool Instance r2-psc"                    # Clear display name
-    node_count         = 2
+    node_count         = 1
     database_flags     = {}      # You might want to specify flags here
     availability_type  = "ZONAL" # Or "REGIONAL"
     gce_zone           = null    # Specify if needed
